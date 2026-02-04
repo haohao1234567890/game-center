@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经典推箱子 - 复古游戏中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom, #0f172a, #1e40af);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+        .sokoban-cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+        .wall {
+            background-color: #475569;
+        }
+        .floor {
+            background-color: #e2e8f0;
+        }
+        .target {
+            background-color: #fbbf24;
+            border-radius: 50%;
+        }
+        .player {
+            color: #ef4444;
+        }
+        .box {
+            color: #1e40af;
+        }
+        .box-on-target {
+            color: #7e22ce;
+        }
+    </style>
+</head>
+<body class="container mx-auto px-4 py-8">
+    <header class="flex justify-between items-center mb-8">
+        <a href="index.html" class="text-secondary text-2xl hover:text-yellow-300 transition-colors">
+            <i class="fa fa-arrow-left"></i> 返回首页
+        </a>
+        <h1 class="text-3xl font-bold text-secondary">经典推箱子</h1>
+        <div class="w-12"></div>
+    </header>
+
+    <div class="flex flex-col md:flex-row justify-center items-center gap-8">
+        <div id="game-container" class="grid gap-0 border-4 border-secondary bg-dark"></div>
+        
+        <div class="bg-dark/70 p-6 rounded-xl border-2 border-secondary min-w-[250px]">
+            <h2 class="text-xl font-bold mb-4 text-center">游戏信息</h2>
+            <div class="mb-4">
+                <p class="mb-2"><span class="text-secondary font-bold">关卡：</span> <span id="level">1</span></p>
+                <p class="mb-2"><span class="text-secondary font-bold">步数：</span> <span id="moves">0</span></p>
+            </div>
+            <div class="flex flex-col gap-3">
+                <div class="flex gap-2 flex-wrap">
+                    <button id="prev-level" class="flex-1 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        上一关
+                    </button>
+                    <button id="next-level" class="flex-1 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        下一关
+                    </button>
+                </div>
+                <button id="restart-level" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                    重新开始
+                </button>
+                <button id="hint-btn" class="bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-700 transition-colors">
+                    提示
+                </button>
+            </div>
+            <div class="mt-6">
+                <h3 class="text-lg font-bold mb-2 text-secondary">操作说明</h3>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    <li>↑ ↓ ← →：移动角色</li>
+                    <li>W/A/S/D：移动角色</li>
+                    <li>目标：将所有箱子推到目标位置</li>
+                </ul>
+            </div>
+            <div class="mt-4">
+                <h3 class="text-lg font-bold mb-2 text-secondary">图例</h3>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="sokoban-cell wall"><i class="fa fa-square"></i></div>
+                    <span>墙壁</span>
+                </div>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="sokoban-cell floor player"><i class="fa fa-user"></i></div>
+                    <span>玩家</span>
+                </div>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="sokoban-cell floor box"><i class="fa fa-cube"></i></div>
+                    <span>箱子</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="sokoban-cell target"><i class="fa fa-circle-o"></i></div>
+                    <span>目标位置</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 关卡数据
+        const LEVELS = [
+            // 关卡1
+            [
+                [1, 1, 1, 1, 1],
+                [1, 0, 0, 0, 1],
+                [1, 0, 3, 0, 1],
+                [1, 2, 0, 4, 1],
+                [1, 1, 1, 1, 1]
+            ],
+            // 关卡2
+            [
+                [1, 1, 1, 1, 1, 1],
+                [1, 0, 0, 0, 0, 1],
+                [1, 0, 3, 0, 0, 1],
+                [1, 2, 0, 3, 4, 1],
+                [1, 1, 1, 1, 1, 1]
+            ],
+            // 关卡3
+            [
+                [1, 1, 1, 1, 1, 1, 1],
+                [1, 0, 0, 1, 0, 0, 1],
+                [1, 0, 0, 1, 0, 0, 1],
+                [1, 0, 0, 0, 3, 0, 1],
+                [1, 2, 0, 3, 0, 4, 1],
+                [1, 1, 1, 1, 1, 1, 1]
+            ]
+        ];
+        
+        // 游戏常量
+        const TILE_TYPES = {
+            FLOOR: 0,
+            WALL: 1,
+            PLAYER: 2,
+            BOX: 3,
+            TARGET: 4
+        };
+        
+        // 游戏状态
+        let gameState = {
+            level: 0,
+            map: [],
+            playerX: 0,
+            playerY: 0,
+            moves: 0,
+            gameOver: false,
+            hintUsed: false
+        };
+        
+        // DOM元素
+        const gameContainer = document.getElementById('game-container');
+        const levelElement = document.getElementById('level');
+        const movesElement = document.getElementById('moves');
+        const prevLevelBtn = document.getElementById('prev-level');
+        const nextLevelBtn = document.getElementById('next-level');
+        const restartLevelBtn = document.getElementById('restart-level');
+        const hintBtn = document.getElementById('hint-btn');
+        
+        // 初始化关卡
+        function initLevel(levelIndex) {
+            // 检查关卡是否存在
+            if (levelIndex < 0 || levelIndex >= LEVELS.length) {
+                alert('该关卡不存在！');
+                return;
+            }
+            
+            // 更新游戏状态
+            gameState.level = levelIndex;
+            gameState.map = JSON.parse(JSON.stringify(LEVELS[levelIndex])); // 深拷贝
+            gameState.moves = 0;
+            gameState.gameOver = false;
+            gameState.hintUsed = false;
+            
+            // 更新UI
+            levelElement.textContent = levelIndex + 1;
+            movesElement.textContent = '0';
+            
+            // 找到玩家位置
+            findPlayerPosition();
+            
+            // 渲染游戏地图
+            renderMap();
+            
+            // 更新按钮状态
+            prevLevelBtn.disabled = levelIndex === 0;
+            nextLevelBtn.disabled = levelIndex === LEVELS.length - 1;
+        }
+        
+        // 找到玩家位置
+        function findPlayerPosition() {
+            for (let y = 0; y < gameState.map.length; y++) {
+                for (let x = 0; x < gameState.map[y].length; x++) {
+                    if (gameState.map[y][x] === TILE_TYPES.PLAYER) {
+                        gameState.playerX = x;
+                        gameState.playerY = y;
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // 渲染游戏地图
+        function renderMap() {
+            // 设置网格尺寸
+            const rows = gameState.map.length;
+            const cols = gameState.map[0].length;
+            gameContainer.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
+            gameContainer.innerHTML = '';
+            
+            // 渲染每个单元格
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'sokoban-cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    // 根据单元格类型设置样式和内容
+                    const tileType = gameState.map[y][x];
+                    
+                    switch (tileType) {
+                        case TILE_TYPES.WALL:
+                            cell.classList.add('wall');
+                            cell.innerHTML = '<i class="fa fa-square"></i>';
+                            break;
+                        case TILE_TYPES.FLOOR:
+                            cell.classList.add('floor');
+                            break;
+                        case TILE_TYPES.PLAYER:
+                            cell.classList.add('floor', 'player');
+                            cell.innerHTML = '<i class="fa fa-user"></i>';
+                            break;
+                        case TILE_TYPES.BOX:
+                            cell.classList.add('floor', 'box');
+                            cell.innerHTML = '<i class="fa fa-cube"></i>';
+                            break;
+                        case TILE_TYPES.TARGET:
+                            cell.classList.add('target');
+                            cell.innerHTML = '<i class="fa fa-circle-o"></i>';
+                            break;
+                        case 5: // 箱子在目标位置
+                            cell.classList.add('target', 'box-on-target');
+                            cell.innerHTML = '<i class="fa fa-cube"></i>';
+                            break;
+                        case 6: // 玩家在目标位置
+                            cell.classList.add('target', 'player');
+                            cell.innerHTML = '<i class="fa fa-user"></i>';
+                            break;
+                    }
+                    
+                    gameContainer.appendChild(cell);
+                }
+            }
+        }
+        
+        // 移动玩家
+        function movePlayer(dx, dy) {
+            if (gameState.gameOver) return;
+            
+            const newX = gameState.playerX + dx;
+            const newY = gameState.playerY + dy;
+            
+            // 检查新位置是否是墙壁
+            if (gameState.map[newY][newX] === TILE_TYPES.WALL) {
+                return false;
+            }
+            
+            // 检查新位置是否是箱子
+            if (gameState.map[newY][newX] === TILE_TYPES.BOX || gameState.map[newY][newX] === 5) {
+                // 检查箱子可以推到的位置
+                const boxNewX = newX + dx;
+                const boxNewY = newY + dy;
+                
+                // 箱子新位置是墙壁或另一个箱子，无法推动
+                if (
+                    gameState.map[boxNewY][boxNewX] === TILE_TYPES.WALL ||
+                    gameState.map[boxNewY][boxNewX] === TILE_TYPES.BOX ||
+                    gameState.map[boxNewY][boxNewX] === 5
+                ) {
+                    return false;
+                }
+                
+                // 移动箱子
+                const isBoxOnTarget = gameState.map[newY][newX] === 5;
+                const isNewPosTarget = gameState.map[boxNewY][boxNewX] === TILE_TYPES.TARGET;
+                
+                // 更新箱子位置
+                gameState.map[newY][newX] = isBoxOnTarget ? TILE_TYPES.TARGET : TILE_TYPES.FLOOR;
+                gameState.map[boxNewY][boxNewX] = isNewPosTarget ? 5 : TILE_TYPES.BOX;
+            }
+            
+            // 移动玩家
+            const isPlayerOnTarget = gameState.map[gameState.playerY][gameState.playerX] === 6;
+            const isNewPosTarget = gameState.map[newY][newX] === TILE_TYPES.TARGET;
+            
+            // 更新玩家位置
+            gameState.map[gameState.playerY][gameState.playerX] = isPlayerOnTarget ? TILE_TYPES.TARGET : TILE_TYPES.FLOOR;
+            gameState.map[newY][newX] = isNewPosTarget ? 6 : TILE_TYPES.PLAYER;
+            
+            // 更新玩家坐标
+            gameState.playerX = newX;
+            gameState.playerY = newY;
+            
+            // 更新步数
+            gameState.moves++;
+            movesElement.textContent = gameState.moves;
+            
+            // 重新渲染地图
+            renderMap();
+            
+            // 检查游戏胜利
+            checkWin();
+            
+            return true;
+        }
+        
+        // 检查游戏胜利
+        function checkWin() {
+            let allBoxesOnTarget = true;
+            
+            // 检查
