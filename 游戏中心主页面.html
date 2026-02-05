@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复古游戏中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .game-card {
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+        }
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+        }
+        .game-card:active {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-white p-4 md:p-8">
+    <!-- 顶部导航 -->
+    <header class="text-center mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-2">
+            <i class="fa fa-gamepad mr-3"></i>复古游戏中心
+        </h1>
+        <p class="text-gray-400">选择你想玩的游戏，开始畅玩吧！</p>
+    </header>
+
+    <!-- 移动端横屏提示 -->
+    <div class="md:hidden bg-yellow-500/20 text-yellow-300 p-3 text-center text-sm rounded-lg mb-6">
+        <i class="fa fa-mobile-phone fa-rotate-90 mr-2"></i> 建议横屏游玩体验更佳
+    </div>
+
+    <!-- 游戏列表 -->
+    <main class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 2048游戏卡片 -->
+        <div class="game-card bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-center cursor-pointer" onclick="window.location.href='2048.html'">
+            <div class="text-6xl mb-4">2048</div>
+            <i class="fa fa-cubes text-5xl mb-4 text-white/80"></i>
+            <p class="text-gray-200 mb-4">经典数字合成游戏</p>
+            <button class="bg-white text-indigo-700 font-bold py-2 px-6 rounded-lg active:scale-95 transition-all">
+                <i class="fa fa-play mr-2"></i>开始游戏
+            </button>
+        </div>
+
+        <!-- 赛车游戏卡片 -->
+        <div class="game-card bg-gradient-to-br from-red-600 to-orange-700 rounded-2xl p-6 text-center cursor-pointer" onclick="window.location.href='racing.html'">
+            <div class="text-6xl mb-4">赛车</div>
+            <i class="fa fa-car text-5xl mb-4 text-white/80"></i>
+            <p class="text-gray-200 mb-4">经典像素赛车游戏</p>
+            <button class="bg-white text-red-700 font-bold py-2 px-6 rounded-lg active:scale-95 transition-all">
+                <i class="fa fa-play mr-2"></i>开始游戏
+            </button>
+        </div>
+
+        <!-- 打砖块游戏卡片 -->
+        <div class="game-card bg-gradient-to-br from-green-600 to-teal-700 rounded-2xl p-6 text-center cursor-pointer" onclick="window.location.href='breakout.html'">
+            <div class="text-6xl mb-4">打砖块</div>
+            <i class="fa fa-shield text-5xl mb-4 text-white/80"></i>
+            <p class="text-gray-200 mb-4">经典弹球打砖块</p>
+            <button class="bg-white text-green-700 font-bold py-2 px-6 rounded-lg active:scale-95 transition-all">
+                <i class="fa fa-play mr-2"></i>开始游戏
+            </button>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-gray-500 text-sm">
+        <p>© 2026 复古游戏中心 | 优化版体验</p>
+    </footer>
+
+    <script>
+        // 页面加载动画
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

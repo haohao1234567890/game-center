@@ -4,114 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>游戏中心入口</title>
-    <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 使用meta refresh标签实现自动跳转 -->
-    <meta http-equiv="refresh" content="0;url=index.html">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1e40af',
-                        secondary: '#facc15',
-                        dark: '#0f172a',
-                        light: '#f8fafc'
-                    },
-                    fontFamily: {
-                        pixel: ['VT323', 'monospace', 'system-ui']
-                    },
-                    animation: {
-                        'bounce-slow': 'bounce 2s infinite',
-                        'pulse-fast': 'pulse 1s infinite'
-                    }
-                }
-            }
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .pixel-text {
-                text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
-                letter-spacing: 1px;
-            }
-            .retro-bg {
-                background: linear-gradient(45deg, #1e3a8a 0%, #3b82f6 50%, #1e3a8a 100%);
-                background-size: 200% 200%;
-                animation: gradientShift 3s ease infinite;
-            }
-            @keyframes gradientShift {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-            }
-            .btn-3d {
-                transform: translateY(-4px);
-                box-shadow: 0 4px 0 0 #0f172a;
-                transition: all 0.1s;
-            }
-            .btn-3d:active {
-                transform: translateY(0);
-                box-shadow: 0 0 0 0 #0f172a;
-            }
+        .loader { animation: pulse 1.5s infinite; }
+        .fade-out { animation: fadeOut 0.5s forwards; }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
     </style>
 </head>
-<body class="retro-bg min-h-screen flex items-center justify-center overflow-hidden">
-    <div class="text-center z-10">
-        <!-- 像素风格图标 -->
-        <div class="mb-6 flex justify-center">
-            <div class="w-24 h-24 bg-secondary rounded-lg flex items-center justify-center transform rotate-6 shadow-lg">
-                <i class="fa fa-gamepad text-5xl text-primary pixel-text"></i>
-            </div>
+<body class="bg-gradient-to-br from-gray-900 to-blue-900 min-h-screen flex flex-col items-center justify-center text-white p-4">
+    <!-- 游戏中心LOGO -->
+    <div class="text-center mb-8">
+        <i class="fa fa-gamepad text-6xl text-yellow-400 loader mb-4"></i>
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">复古游戏中心</h1>
+        <p class="text-gray-300">经典游戏，一键畅玩</p>
+    </div>
+
+    <!-- 跳转提示 -->
+    <div class="bg-black/50 backdrop-blur-sm p-6 rounded-xl border border-yellow-400/30 w-full max-w-md text-center">
+        <p class="mb-4">正在进入游戏中心主程序...</p>
+        <div class="flex items-center justify-center gap-2 mb-6">
+            <span class="text-yellow-400 text-xl font-bold" id="countdown">3</span>
+            <span>秒后自动跳转</span>
         </div>
         
-        <!-- 标题 -->
-        <h1 class="text-5xl md:text-6xl font-bold text-secondary pixel-text mb-4 animate-pulse-fast">
-            游戏中心
-        </h1>
-        <p class="text-xl text-light mb-8">正在加载精彩游戏世界...</p>
-        
-        <!-- 加载动画 -->
-        <div class="flex justify-center space-x-2 mb-8">
-            <div class="w-4 h-4 bg-secondary rounded-full animate-bounce" style="animation-delay: 0s"></div>
-            <div class="w-4 h-4 bg-secondary rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-            <div class="w-4 h-4 bg-secondary rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
-        </div>
-        
-        <!-- 跳转按钮 -->
-        <button onclick="window.location.href='index.html'" 
-                class="px-8 py-4 bg-secondary text-primary font-bold text-xl rounded-lg btn-3d hover:bg-yellow-400 transition-colors">
-            <i class="fa fa-arrow-right mr-2"></i>立即进入
+        <!-- 手动跳转按钮 -->
+        <button id="jump-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-8 rounded-lg transition-all active:scale-95">
+            <i class="fa fa-arrow-right mr-2"></i> 立即进入
         </button>
         
-        <!-- 提示信息 -->
-        <p class="text-sm text-gray-300 mt-6">
-            如果页面未自动跳转，请点击上方按钮
-        </p>
+        <!-- 错误提示（默认隐藏） -->
+        <div id="error-msg" class="mt-4 text-red-400 hidden">
+            <i class="fa fa-exclamation-triangle mr-2"></i> 主程序文件不存在，请检查路径
+        </div>
     </div>
-    
-    <!-- 装饰性像素块 -->
-    <div class="fixed inset-0 z-0 opacity-10">
-        <div class="absolute top-10 left-10 w-8 h-8 bg-secondary rounded"></div>
-        <div class="absolute top-20 right-20 w-12 h-12 bg-light rounded"></div>
-        <div class="absolute bottom-10 left-1/4 w-6 h-6 bg-secondary rounded"></div>
-        <div class="absolute bottom-20 right-1/3 w-10 h-10 bg-light rounded"></div>
+
+    <!-- 页脚 -->
+    <div class="mt-auto text-gray-400 text-sm">
+        © 2026 复古游戏中心 | 体验优化版
     </div>
-    
-    <!-- 备用JavaScript跳转 -->
+
     <script>
-        // 确保跳转功能可靠
-        window.onload = function() {
-            // 双重保险：1秒后强制跳转
-            setTimeout(function() {
-                if (window.location.href.indexOf('index.html') === -1) {
-                    window.location.href = 'index.html';
-                }
-            }, 3000);
-        };
+        // 配置主程序路径（指向游戏选择页面）
+        const MAIN_PROGRAM_URL = "游戏中心主页面.html"; 
+        let countdown = 3;
+        const countdownEl = document.getElementById('countdown');
+        const jumpBtn = document.getElementById('jump-btn');
+        const errorMsg = document.getElementById('error-msg');
+        const bodyEl = document.body;
+
+        // 倒计时逻辑
+        const timer = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                jumpToMainProgram();
+            }
+        }, 1000);
+
+        // 跳转主程序函数
+        function jumpToMainProgram() {
+            try {
+                // 添加跳转动画
+                bodyEl.classList.add('fade-out');
+                setTimeout(() => {
+                    window.location.href = MAIN_PROGRAM_URL;
+                }, 500);
+            } catch (e) {
+                errorMsg.classList.remove('hidden');
+                console.error('跳转失败:', e);
+            }
+        }
+
+        // 手动跳转事件
+        jumpBtn.addEventListener('click', () => {
+            clearInterval(timer);
+            jumpToMainProgram();
+        });
+
+        // 监听页面加载失败
+        window.addEventListener('error', (e) => {
+            if (e.filename.includes(MAIN_PROGRAM_URL)) {
+                errorMsg.classList.remove('hidden');
+            }
+        });
     </script>
 </body>
 </html>
